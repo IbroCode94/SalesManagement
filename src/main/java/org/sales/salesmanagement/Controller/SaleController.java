@@ -5,13 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sales.salesmanagement.Dto.dtorequest.ProductBuyRequest;
 import org.sales.salesmanagement.Dto.response.GenericResponse;
+import org.sales.salesmanagement.Dto.response.SalesResponse;
 import org.sales.salesmanagement.service.SaleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,5 +23,9 @@ public class SaleController {
     public ResponseEntity<GenericResponse> createSale(@Valid @RequestBody List<ProductBuyRequest> productBuyRequests) {
         GenericResponse salesResponse = service.createSale(productBuyRequests);
         return ResponseEntity.status(HttpStatus.CREATED).body(salesResponse);
+    }
+    @GetMapping("/all")
+    public List<SalesResponse> getAllSales() {
+        return service.getAllSales();
     }
 }

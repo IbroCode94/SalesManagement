@@ -88,21 +88,34 @@ public class ProductServiceImpl implements ProductService {
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role.name()));
     }
 
-
+//  TODO this update product Item for sale
     @Override
     @Transactional
     public ProductResponse updateProduct(Long productId, ProductDto request) {
         Product existingProduct = getProductById(productId);
+
+
+        Customers currentUser = getCurrentUser();
+        if (!isProductCreator(currentUser, existingProduct)) {
+            throw new ResourceNotFoundException("Access denied. Only the product creator can edit quantities and prices.");
+        }
+
         Category category = categoryRepository.findByName(request.getCategoryName())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryName()));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with name: " + request.getCategoryName()));
+
         existingProduct.setName(request.getName());
         existingProduct.setDescription(request.getDescription());
         existingProduct.setCategoryId(category);
         existingProduct.setQuantity(request.getQuantity());
         existingProduct.setPrice(request.getPrice());
+
         Product updatedProduct = productRepository.save(existingProduct);
         return convertToProductResponse(updatedProduct);
 
+    }
+    private boolean isProductCreator(Customers currentUser, Product product) {
+        return currentUser != null && product != null &&
+                currentUser.getId().equals(product.getCreatedBy().getId());
     }
 
     private ProductResponse convertToProductResponse(Product product) {
