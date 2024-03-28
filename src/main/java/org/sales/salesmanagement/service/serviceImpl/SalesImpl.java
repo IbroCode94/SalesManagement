@@ -90,6 +90,25 @@ public class SalesImpl implements SaleService {
         return response;
     }
 
+// TODO ths get all sales
+    @Override
+    public List<SalesResponse> getAllSales() {
+        List<Sales> allSales = salesRepository.findAll();
+        List<SalesResponse> salesResponses = new ArrayList<>();
+
+        for (Sales sale : allSales) {
+            SalesResponse response = new SalesResponse();
+            response.setId(sale.getId());
+            response.setCreatedAt(sale.getCreatedAt());
+            response.setClient(sale.getBuyer().getFirstName());
+            response.setSeller(sale.getSeller().getFirstName());
+            response.setTotal(sale.getTotalAmount());
+            salesResponses.add(response);
+        }
+
+        return salesResponses;
+    }
+
     private double calculateTotalAmount(List<ProductBuyRequest> productBuyRequests) {
         BigDecimal total = BigDecimal.ZERO;
         for (ProductBuyRequest request : productBuyRequests) {

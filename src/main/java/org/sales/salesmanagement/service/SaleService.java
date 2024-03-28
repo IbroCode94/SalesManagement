@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface SaleService {
     public GenericResponse createSale(List<ProductBuyRequest> productBuyRequests);
+    List<SalesResponse> getAllSales();
 }

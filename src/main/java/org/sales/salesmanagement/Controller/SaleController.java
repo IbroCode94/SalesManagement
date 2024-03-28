@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sales.salesmanagement.Dto.dtorequest.ProductBuyRequest;
 import org.sales.salesmanagement.Dto.response.GenericResponse;
-import org.sales.salesmanagement.Dto.response.SalesResponse;
 import org.sales.salesmanagement.service.SaleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
