@@ -9,7 +9,6 @@ public class AuditTrailDTO {
     private String firstName;
     private String lastName;
     private String action;
-    private String ipAddress;
     private LocalDateTime timeStamp;
     private String email;
 }

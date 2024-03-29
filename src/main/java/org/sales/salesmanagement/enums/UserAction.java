@@ -1,14 +1,14 @@
 package org.sales.salesmanagement.enums;
 
 public enum UserAction {
-    DOCUMENT_CREATED("Document Created"),
-    DOCUMENT_DELETED("Document Deleted"),
-    TEMPLATE_CREATED("Template Created"),
-    PIN_CREATED("Created Pin"),
-    USER_DELETED("User Deleted"),
     USER_CREATED("User Created"),
-    TEMPLATE_UPLOAD("User Uploaded Template"),
-    SIGNATURE_UPLOAD("User Uploaded A Signature");
+    USER_DELETED("User Deleted"),
+    USER_UPDATED("User Updated"),
+    SALE_CREATED("Created Sale"),
+    PRODUCT_CREATED("Product created"),
+    PRODUCT_EDITED("PRODUCT_EDITED"),
+    PRODUCT_DELETED("PRODUCT_DELETED");
+
 
     private final String actionName;
 

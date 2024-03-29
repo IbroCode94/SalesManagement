@@ -11,10 +11,12 @@ import org.sales.salesmanagement.Exceptions.ResourceNotFoundException;
 import org.sales.salesmanagement.Repository.CustomerRepository;
 import org.sales.salesmanagement.Repository.ProductRepository;
 import org.sales.salesmanagement.Repository.SalesRepository;
+import org.sales.salesmanagement.enums.UserAction;
 import org.sales.salesmanagement.models.Customers;
 import org.sales.salesmanagement.models.Product;
 import org.sales.salesmanagement.models.Sales;
 import org.sales.salesmanagement.models.Transaction;
+import org.sales.salesmanagement.service.AuditTrailService;
 import org.sales.salesmanagement.service.SaleService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,7 +35,9 @@ public class SalesImpl implements SaleService {
     private final SalesRepository salesRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+    private final AuditTrailService auditTrailService;
 
+// TODO this method is sale( where a user buys a product)
     @Override
     @Transactional
     @SneakyThrows
@@ -43,6 +47,7 @@ public class SalesImpl implements SaleService {
         validateClientBalance(customers, totalAmount);
 
         customers.setWalletBal(customers.getWalletBal() - totalAmount);
+        customers.setTotalSpent(customers.getTotalSpent().add(BigDecimal.valueOf(totalAmount)));
         customerRepository.save(customers);
 
         Sales sales = new Sales();
@@ -84,9 +89,6 @@ public class SalesImpl implements SaleService {
         GenericResponse response = new GenericResponse();
         response.setStatus("Success");
         response.setMessage("Sale created successfully");
-
-
-
         return response;
     }
 
@@ -137,7 +139,6 @@ public class SalesImpl implements SaleService {
         if (authentication != null && authentication.getPrincipal() instanceof Customers) {
             return (Customers) authentication.getPrincipal();
         }
-        // Handle case when user is not authenticated or is not an instance of Customers
-        return null; // Or throw an exception
+        return null;
     }
 }

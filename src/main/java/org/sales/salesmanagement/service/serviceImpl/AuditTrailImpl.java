@@ -9,6 +9,7 @@ import org.sales.salesmanagement.Repository.CustomerRepository;
 import org.sales.salesmanagement.enums.UserAction;
 import org.sales.salesmanagement.models.AuditTrail;
 import org.sales.salesmanagement.models.Customers;
+import org.sales.salesmanagement.models.Product;
 import org.sales.salesmanagement.service.AuditTrailService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
@@ -48,6 +49,16 @@ public class AuditTrailImpl implements AuditTrailService {
         } else {
             throw new ResourceNotFoundException("User Not Found");
         }
+    }
+
+    @Override
+    public void saveProductAuditTrail(Product product, UserAction actionPerformed, String emailAddress) {
+        AuditTrail auditTrail = new AuditTrail();
+        auditTrail.setAction(actionPerformed.getActionName());
+        auditTrail.setEmail(emailAddress);
+        auditTrail.setTimeStamp(LocalDateTime.now());
+
+        auditTrailRepository.save(auditTrail);
     }
 
     @Override

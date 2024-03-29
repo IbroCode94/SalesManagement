@@ -11,9 +11,11 @@ import org.sales.salesmanagement.Repository.CategoryRepository;
 import org.sales.salesmanagement.Repository.CustomerRepository;
 import org.sales.salesmanagement.Repository.ProductRepository;
 import org.sales.salesmanagement.enums.Roles;
+import org.sales.salesmanagement.enums.UserAction;
 import org.sales.salesmanagement.models.Category;
 import org.sales.salesmanagement.models.Customers;
 import org.sales.salesmanagement.models.Product;
+import org.sales.salesmanagement.service.AuditTrailService;
 import org.sales.salesmanagement.service.ProductService;
 import org.sales.salesmanagement.utils.UserDetailsDto;
 import org.sales.salesmanagement.utils.UserUtils;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +36,7 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private final CustomerRepository customerRepository;
+    private final AuditTrailService auditTrailService;
 
     @Override
     public List<ProductResponse> getAllProducts() {
@@ -50,7 +53,11 @@ public class ProductServiceImpl implements ProductService {
         if (authentication != null && authentication.getPrincipal() instanceof Customers) {
             Customers currentUser = (Customers) authentication.getPrincipal();
             log.info("Current User: {}", currentUser);
-            if (currentUser != null && hasRole(currentUser, Roles.CLIENT)) {
+            if (currentUser != null && hasRole(currentUser, Roles.SELLER)) {
+                Optional<Product> existingProduct = productRepository.findByName(request.getName());
+                if (existingProduct.isPresent()) {
+                    throw new ResourceNotFoundException("Product already exists. It can be edited or created when out of stock.");
+                }
 
                 Category category = new Category();
                 category.setName(request.getCategoryName());
@@ -67,13 +74,16 @@ public class ProductServiceImpl implements ProductService {
                 Customers currentUsers = getCurrentUser();
                 product.setCreatedBy(currentUsers);
 
-                category.getProducts().add(product); // Add the product to the category's products list
+                category.getProducts().add(product);
                 categoryRepository.save(category);
 
                 ProductResponse productResponse = new ProductResponse();
                 productResponse.setName(savedProduct.getName());
                 productResponse.setPrice(savedProduct.getPrice());
                 productResponse.setQuantity(savedProduct.getQuantity());
+
+                auditTrailService.saveProductAuditTrail(savedProduct, UserAction.PRODUCT_CREATED, currentUser.getEmail());
+
                 return productResponse;
             } else {
                 throw new ResourceNotFoundException("Access denied. User must be logged in as a client.");
@@ -110,6 +120,7 @@ public class ProductServiceImpl implements ProductService {
         existingProduct.setPrice(request.getPrice());
 
         Product updatedProduct = productRepository.save(existingProduct);
+        auditTrailService.saveProductAuditTrail(updatedProduct, UserAction.PRODUCT_EDITED, getCurrentUser().getEmail());
         return convertToProductResponse(updatedProduct);
 
     }
@@ -131,6 +142,8 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(Long productId) {
         Product product = getProductById(productId);
         productRepository.delete(product);
+        auditTrailService.saveProductAuditTrail(product, UserAction.PRODUCT_DELETED, getCurrentUser().getEmail());
+
     }
 
     private Product getProductById(Long productId) {

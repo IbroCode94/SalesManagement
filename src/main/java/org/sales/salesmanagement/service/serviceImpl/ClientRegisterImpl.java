@@ -9,7 +9,9 @@ import org.sales.salesmanagement.Exceptions.ResourceNotFoundException;
 
 import org.sales.salesmanagement.Repository.CustomerRepository;
 import org.sales.salesmanagement.enums.Roles;
+import org.sales.salesmanagement.enums.UserAction;
 import org.sales.salesmanagement.models.Customers;
+import org.sales.salesmanagement.service.AuditTrailService;
 import org.sales.salesmanagement.service.ClientService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class ClientRegisterImpl implements ClientService {
     private final CustomerRepository customerRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
+    private final AuditTrailService auditTrailService;
 
     @Override
     public List<RegisterResponse> getAllClients() {
@@ -56,6 +59,8 @@ public class ClientRegisterImpl implements ClientService {
         }
 
         Customers savedCustomers = customerRepository.save(newCustomers);
+        // TODO:
+        auditTrailService.saveAuditTrail(savedCustomers, UserAction.USER_CREATED, savedCustomers.getEmail());
         RegisterResponse registerResponse = modelMapper.map(savedCustomers, RegisterResponse.class);
         registerResponse.setRole(savedCustomers.getRoles().toString());
 
@@ -69,12 +74,17 @@ public class ClientRegisterImpl implements ClientService {
         modelMapper.map(request, existingCustomers);
         existingCustomers.setRoles(request.getRole() != null ? Enum.valueOf(Roles.class, request.getRole()) : Roles.USER);
         Customers updatedCustomers = customerRepository.save(existingCustomers);
+        auditTrailService.saveAuditTrail(updatedCustomers, UserAction.USER_UPDATED, updatedCustomers.getEmail());
         return modelMapper.map(updatedCustomers, RegisterResponse.class);
     }
 
     @Override
     public void deleteClient(Long clientId) {
+        Customers clientToDelete = customerRepository.findById(clientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found"));
+
         customerRepository.deleteById(clientId);
+        auditTrailService.saveAuditTrail(clientToDelete, UserAction.USER_DELETED, clientToDelete.getEmail());
     }
 
     private Customers getClientById(Long clientId) {

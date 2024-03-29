@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 @Getter
 public enum Roles {
     USER(Set.of(Permission.CLIENT_READ)),
-    CLIENT(Set.of(Permission.CLIENT_READ, Permission.CLIENT_UPDATE, Permission.CLIENT_CREATE));
+    SELLER(Set.of(Permission.CLIENT_READ, Permission.CLIENT_UPDATE, Permission.CLIENT_CREATE));
 
     private final Set<Permission> permissions;
 

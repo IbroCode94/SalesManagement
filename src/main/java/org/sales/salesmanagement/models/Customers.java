@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -47,6 +48,8 @@ public class Customers implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Roles roles;
     private String address;
+    @Column(name = "total_spent")
+    private BigDecimal totalSpent;
 
     @Column(name = "created_At")
     private LocalDateTime createdAt;
