@@ -3,6 +3,7 @@ package org.sales.salesmanagement.Dto.response;
 import lombok.Data;
 import org.sales.salesmanagement.models.Product;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,5 +16,5 @@ public class SalesResponse {
     private String client;
     private String seller;
     private int quantitySold;
-    private double total;
+    private BigDecimal total;
 }

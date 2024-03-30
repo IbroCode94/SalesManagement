@@ -40,6 +40,7 @@ public class SecurityConfigFilter {
             "/api/v1/products/**",
             "/api/v1/audit-trail/**",
             "/api/v1/report/**",
+            "/api/v1/clientReport/**",
             "/api/v1/sales/**",
     };
 

@@ -24,6 +24,11 @@ public class SaleController {
         GenericResponse salesResponse = service.createSale(productBuyRequests);
         return ResponseEntity.status(HttpStatus.CREATED).body(salesResponse);
     }
+    @DeleteMapping("/sales/{saleId}")
+    public ResponseEntity<GenericResponse> deleteSale(@PathVariable Long saleId) {
+        GenericResponse response = service.deleteSale(saleId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
     @GetMapping("/all")
     public List<SalesResponse> getAllSales() {
         return service.getAllSales();

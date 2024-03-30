@@ -20,7 +20,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="customers")
+@Table(name = "customers")
 public class Customers implements UserDetails {
 
     @Id
@@ -38,27 +38,32 @@ public class Customers implements UserDetails {
     private String email;
     @NonNull
     @Column(name = "wallet")
-    private Double walletBal;
+    private BigDecimal walletBal;
     @NotBlank(message = "Phone number cannot be blank")
     @Pattern(regexp = "\\+234[0-9]{8,10}", message = "Phone number must start with '+234' and have 8 to 10 digits")
     private String mobile;
     @Column(name = "password")
     private String password;
+    private boolean isDeleted = false;
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private Roles roles;
     private String address;
     @Column(name = "total_spent")
-    private BigDecimal totalSpent;
+    private BigDecimal totalSpent = BigDecimal.ZERO;
 
     @Column(name = "created_At")
     private LocalDateTime createdAt;
     @Column(name = "updated_At")
     private LocalDateTime updatedAt;
-
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.REMOVE) // Add cascade remove here
+    private List<AuditTrail> auditTrails;
+    @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL, orphanRemoval = true)// Add cascade remove here
+    private List<Sales> sales;
 
 
     ;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.getAuthorities();

@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.sales.salesmanagement.Dto.dtorequest.CustomerRegisterDto;
 import org.sales.salesmanagement.Dto.response.ApiResponse;
+import org.sales.salesmanagement.Dto.response.GenericResponse;
 import org.sales.salesmanagement.Dto.response.RegisterResponse;
 import org.sales.salesmanagement.service.ClientService;
 import org.springframework.http.HttpStatus;
@@ -23,9 +24,9 @@ public class RegistrationController {
         ApiResponse<RegisterResponse> client  = clientService.createClient(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(client);
     }
-    @GetMapping
-    public ResponseEntity<List<RegisterResponse>> getAllClients() {
-        List<RegisterResponse> clients = clientService.getAllClients();
+    @GetMapping("/getAll")
+    public ResponseEntity<List<GenericResponse>> getAllClients() {
+        List<GenericResponse> clients = clientService.getAllClients();
         return ResponseEntity.ok(clients);
     }
     @PutMapping("/{clientId}")
@@ -34,8 +35,8 @@ public class RegistrationController {
         return ResponseEntity.ok(updatedClient);
     }
     @DeleteMapping("/{clientId}")
-    public ResponseEntity<Void> deleteClient(@PathVariable Long clientId) {
-        clientService.deleteClient(clientId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<GenericResponse> deleteClient(@PathVariable Long clientId) {
+        GenericResponse response= clientService.deleteClient(clientId);
+        return new  ResponseEntity<>(response,HttpStatus.OK);
     }
 }

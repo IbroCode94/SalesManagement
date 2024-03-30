@@ -32,9 +32,10 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse authenticateUser(LoginRequest loginRequest) {
         Customers customer = customerRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new CustomerNotFoundException("Customer with email: " + loginRequest.getEmail() + " not found"));
-
+        if (customer.isDeleted()) {
+            throw new CustomerNotFoundException("Customer with email: " + loginRequest.getEmail() + " is deleted and cannot log in.");
+        }
         customerRepository.save(customer);
-
         authenticateSpringSecurity(loginRequest.getEmail(), loginRequest.getPassword());
 
         String jwtToken = jwtService.generateToken(customer);

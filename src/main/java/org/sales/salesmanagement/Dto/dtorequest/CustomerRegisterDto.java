@@ -18,5 +18,5 @@ public class CustomerRegisterDto {
     @Pattern(regexp = "^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\",.<>?]).*$", message = "Password must contain at least one uppercase letter and one special character")
     private String password;
     private String address;
-    private String role;
+    private String roles;
 }

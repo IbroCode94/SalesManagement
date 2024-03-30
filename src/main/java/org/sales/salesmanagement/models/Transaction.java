@@ -18,10 +18,10 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     private Product product;
     private int quantity;
     private BigDecimal price;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     private Sales sales;
 }

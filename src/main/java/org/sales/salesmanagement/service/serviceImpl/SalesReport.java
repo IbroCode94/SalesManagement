@@ -34,7 +34,7 @@ public class SalesReport implements SalesReportService {
 
         BigDecimal totalRevenue = BigDecimal.ZERO;
         for (Sales sale : salesInRange) {
-            totalRevenue = totalRevenue.add(BigDecimal.valueOf(sale.getTotalAmount()));
+            totalRevenue = totalRevenue.add(sale.getTotalAmount());
         }
         reportResponse.setTotalRevenue(totalRevenue);
 
@@ -57,7 +57,7 @@ public class SalesReport implements SalesReportService {
         Map<String, BigDecimal> sellerRevenueMap = new HashMap<>();
         for (Sales sale : salesInRange) {
             String sellerName = sale.getSeller().getFirstName() + " " + sale.getSeller().getLastName();
-            BigDecimal saleAmount = BigDecimal.valueOf(sale.getTotalAmount());
+            BigDecimal saleAmount = sale.getTotalAmount();
             sellerRevenueMap.put(sellerName, sellerRevenueMap.getOrDefault(sellerName, BigDecimal.ZERO).add(saleAmount));
         }
         List<Map.Entry<String, BigDecimal>> sortedSellerRevenueList = sellerRevenueMap.entrySet().stream()

@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.sales.salesmanagement.Dto.dtorequest.CustomerRegisterDto;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -15,4 +17,6 @@ public class RegisterResponse {
     private String email;
     private String firstName;
     private String role;
+    private BigDecimal walletBal;
+    private String status;
 }

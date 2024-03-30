@@ -11,6 +11,7 @@ import org.sales.salesmanagement.Exceptions.ResourceNotFoundException;
 import org.sales.salesmanagement.Repository.CustomerRepository;
 import org.sales.salesmanagement.Repository.ProductRepository;
 import org.sales.salesmanagement.Repository.SalesRepository;
+import org.sales.salesmanagement.enums.Roles;
 import org.sales.salesmanagement.enums.UserAction;
 import org.sales.salesmanagement.models.Customers;
 import org.sales.salesmanagement.models.Product;
@@ -43,11 +44,21 @@ public class SalesImpl implements SaleService {
     @SneakyThrows
     public GenericResponse createSale(List<ProductBuyRequest> productBuyRequests) {
         Customers customers = getCurrentUser();
-        double totalAmount = calculateTotalAmount(productBuyRequests);
-        validateClientBalance(customers, totalAmount);
+        BigDecimal totalAmount = calculateTotalAmount(productBuyRequests);
+        log.info("Total amount of items purchased by user: {}", totalAmount);
 
-        customers.setWalletBal(customers.getWalletBal() - totalAmount);
-        customers.setTotalSpent(customers.getTotalSpent().add(BigDecimal.valueOf(totalAmount)));
+        if (customers.getRoles() == Roles.SELLER) {
+            throw new ResourceNotFoundException("Sellers cannot make purchases. Please sign up as a buyer or customer.");
+        }
+        validateClientBalance(customers, totalAmount);
+        BigDecimal initialWalletBalance = customers.getWalletBal();
+
+        customers.setWalletBal(customers.getWalletBal().subtract(totalAmount));
+
+        BigDecimal totalSpent = customers.getTotalSpent().add(totalAmount);
+        log.info("Initial wallet balance: {}", initialWalletBalance);
+        log.info("Wallet balance after purchase: {}", customers.getWalletBal());
+        customers.setTotalSpent(totalSpent);
         customerRepository.save(customers);
 
         Sales sales = new Sales();
@@ -77,14 +88,16 @@ public class SalesImpl implements SaleService {
             transaction.setSales(sales);
             transactions.add(transaction);
 
+            BigDecimal totalPriceDecimal = totalPrice;
+            updateSellerWalletBalance(seller, totalPriceDecimal);
             product.setQuantity(product.getQuantity() - request.getQuantity());
         }
 
         sales.setTransactions(transactions);
         sales.setTotalAmount(totalAmount);
-        customers.setWalletBal(customers.getWalletBal() - totalAmount);
-        customerRepository.save(customers);
         salesRepository.save(sales);
+        log.info("Total amount of items purchased by {}: {}", customers.getEmail(), totalAmount);
+        log.info("Wallet balance after purchase for {}: {}", customers.getEmail(), customers.getWalletBal());
 
         GenericResponse response = new GenericResponse();
         response.setStatus("Success");
@@ -92,7 +105,6 @@ public class SalesImpl implements SaleService {
         return response;
     }
 
-// TODO ths get all sales
     @Override
     public List<SalesResponse> getAllSales() {
         List<Sales> allSales = salesRepository.findAll();
@@ -111,12 +123,18 @@ public class SalesImpl implements SaleService {
         return salesResponses;
     }
 
-    private double calculateTotalAmount(List<ProductBuyRequest> productBuyRequests) {
+    private void updateSellerWalletBalance(Customers seller, BigDecimal amount) {
+        BigDecimal currentBalance = seller.getWalletBal();
+        seller.setWalletBal(currentBalance.add(amount));
+        customerRepository.save(seller);
+    }
+
+    private BigDecimal calculateTotalAmount(List<ProductBuyRequest> productBuyRequests) {
         BigDecimal total = BigDecimal.ZERO;
         for (ProductBuyRequest request : productBuyRequests) {
             Optional<Product> optionalProduct = productRepository.findById(request.getProductId());
             if (optionalProduct.isEmpty()) {
-                throw new ResourceNotFoundException("Product with name " + request.getProductId() + " not found");
+                throw new ResourceNotFoundException("Product with ID " + request.getProductId() + " not found");
             }
 
             Product product = optionalProduct.get();
@@ -125,11 +143,11 @@ public class SalesImpl implements SaleService {
             BigDecimal totalPrice = pricePerUnit.multiply(quantity);
             total = total.add(totalPrice);
         }
-        return total.doubleValue();
+        return total;
     }
 
-    private void validateClientBalance(Customers customers, double totalAmount) {
-        if (customers.getWalletBal() < totalAmount) {
+    private void validateClientBalance(Customers customers, BigDecimal totalAmount) {
+        if (customers.getWalletBal().compareTo(totalAmount) < 0) {
             throw new ResourceNotFoundException("Insufficient balance");
         }
     }
@@ -140,5 +158,22 @@ public class SalesImpl implements SaleService {
             return (Customers) authentication.getPrincipal();
         }
         return null;
+    }
+
+    @Override
+    @Transactional
+    public GenericResponse deleteSale(Long saleId) {
+        Optional<Sales> optionalSales = salesRepository.findById(saleId);
+        if (optionalSales.isEmpty()) {
+            throw new ResourceNotFoundException("Sale with ID " + saleId + " not found");
+        }
+
+        Sales sale = optionalSales.get();
+        salesRepository.delete(sale);
+
+        GenericResponse response = new GenericResponse();
+        response.setStatus("Success");
+        response.setMessage("Sale deleted successfully");
+        return response;
     }
 }

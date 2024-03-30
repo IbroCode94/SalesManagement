@@ -5,6 +5,7 @@ import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sales.salesmanagement.Dto.dtorequest.ProductDto;
+import org.sales.salesmanagement.Dto.response.ApiResponse;
 import org.sales.salesmanagement.Dto.response.ProductResponse;
 import org.sales.salesmanagement.Exceptions.ResourceNotFoundException;
 import org.sales.salesmanagement.Repository.CategoryRepository;
@@ -86,7 +87,7 @@ public class ProductServiceImpl implements ProductService {
 
                 return productResponse;
             } else {
-                throw new ResourceNotFoundException("Access denied. User must be logged in as a client.");
+                throw new ResourceNotFoundException("Access denied. User must be logged in as a Vendor or Seller.");
             }
         } else {
             throw new ResourceNotFoundException("Access denied. User must be authenticated as a client.");
@@ -139,10 +140,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void deleteProduct(Long productId) {
+    public ApiResponse<String> deleteProduct(Long productId) {
+        log.info("helloooooooooooooo");
         Product product = getProductById(productId);
         productRepository.delete(product);
         auditTrailService.saveProductAuditTrail(product, UserAction.PRODUCT_DELETED, getCurrentUser().getEmail());
+        return new ApiResponse<>(200,"Product deleted successfully",null);
 
     }
 
