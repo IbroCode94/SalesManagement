@@ -27,7 +27,6 @@ public class SecurityConfigFilter {
 
 
     private final String[] WHITE_LIST = new String[]{
-            "/v3/api-docs.yaml/",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/webjars/**",
